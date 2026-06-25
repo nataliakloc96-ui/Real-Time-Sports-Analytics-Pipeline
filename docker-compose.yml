@@ -1,0 +1,82 @@
+services:
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    container_name: sports-zookeeper
+
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+
+    ports:
+      - "2181:2181"
+  
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: sports-kafka
+
+    depends_on:
+      - zookeeper
+
+    ports:
+      - "9092:9092"
+    
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:29092,EXTERNAL://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://sports-kafka:29092,EXTERNAL://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+  
+  postgres:
+    image: postgres:15
+    container_name: sports-postgres
+    environment:
+      POSTGRES_USER: sports
+      POSTGRES_PASSWORD: sports_dev_password
+      POSTGRES_DB: sports_analytics
+    command: >
+      postgres -c hba_file=/etc/postgresql/pg_hba.conf
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./pg_hba.conf:/etc/postgresql/pg_hba.conf
+        
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sports -d sports_analytics"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    
+    
+  
+  metabase:
+    image: metabase/metabase:latest
+    container_name: sports-metabase
+    restart: always
+    
+    volumes:
+      - /dev/urandom://dev/random:ro
+    ports:
+      - "3000:3000"
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: metabasedb
+      MB_DB_PORT: 5432
+      MB_DB_USER: metabase
+      MB_DB_PASS: metabase
+      MB_DB_HOST: postgres
+    
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d analitycs"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+volumes:
+  postgres_data:
+

@@ -1,0 +1,25 @@
+
+name: 'sports_pipeline'
+version: '1.0.0'
+
+profile: 'sports_pipeline'
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:         
+  - "target"
+  - "dbt_packages"
+
+
+models:
+  sports_pipeline:
+    staging:
+      +materialized: view
+    marts:
+      +materialized: table
+    

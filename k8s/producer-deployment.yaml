@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-producer
+  namespace: default
+  labels:
+    app: sports-pipeline
+    component: producer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sports-pipeline
+      component: producer
+  template:
+    metadata:
+      labels:
+        app: sports-pipeline
+        component: producer
+    spec:
+      containers:
+        - name: producer
+          image: sports-producer:latest
+          imagePullPolicy: Never
+
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "200m"
+
+          envFrom:
+            - configMapRef:
+                name: pipeline-config
+
+          env:
+            - name: FOOTBALL_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: pipeline-secrets
+                  key: FOOTBALL_API_KEY
+
+ .
+          livenessProbe:
+            exec:
+              command:
+                - python
+                - -c
+                - "import os; os.getpid()"
+            initialDelaySeconds: 30
+            periodSeconds: 60

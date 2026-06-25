@@ -1,0 +1,42 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: spark-silver-batch
+  namespace: default
+  labels:
+    app: sports-pipeline
+    component: spark-batch
+spec:
+  ttlSecondsAfterFinished: 3600
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        app: sports-pipeline
+        component: spark-batch
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: spark-batch
+          image: spark-batch:latest
+          imagePullPolicy: Never
+          command: ["python", "batch_job.py"]
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "500m"
+            limits:
+              memory: "2Gi"
+              cpu: "1000m"
+          envFrom:
+            - configMapRef:
+                name: pipeline-config
+          env:
+            - name: FOOTBALL_API_KEY
+              volueFrom:
+                secretKeyRef:
+                  name: pipeline-secrets
+                  key: FOOTBALL_API_KEY
+    volumes:
+      - name: pipeline-data
+        emptyDir: {}

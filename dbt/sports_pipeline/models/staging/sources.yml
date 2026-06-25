@@ -1,0 +1,31 @@
+version: 2
+ 
+sources:
+  - name: raw
+    description: "Surowe dane załadowane przez load_silver_to_postgres.py z Silver layer"
+    schema: raw
+    tables:
+      - name: match_events
+        description: "Eventy meczowe z football-data.org API, zdeduplikowane przez PySpark batch job"
+        columns:
+          - name: event_id
+            description: "Unikalny identyfikator eventu (match_id + lastUpdated)"
+            tests:
+              - unique
+              - not_null
+          - name: match_id
+            description: "ID meczu z football-data.org API"
+            tests:
+              - not_null
+          - name: competition_code
+            description: "Kod kompetycji (PL, CL, BL1)"
+            tests:
+              - not_null
+              - accepted_values:
+                    values: ['PL', 'CL', 'BL1', 'SA', 'PD', 'FL1']
+          - name: status
+            description: "Status meczu"
+            tests:
+              - accepted_values:
+                    values: ['SCHEDULED', 'LIVE', 'IN_PLAY', 'PAUSED', 'FINISHED', 'POSTPONED', 'CANCELLED']
+ 
