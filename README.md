@@ -127,8 +127,8 @@ cp producer/.env.example producer/.env
 
 ```bash
 docker compose up -d kafka zookeeper postgres
-![Lineage Graph](docs/docker.png)
 ```
+![Lineage Graph](docs/docker.png)
 
 ### 4. Stwórz Kafka topic
 
@@ -188,8 +188,8 @@ dbt test
 dbt docs generate
 dbt docs serve --port 8082
 # Otwórz http://localhost:8082
-![Lineage Graph](docs/lineage_graph.png)
 ```
+![Lineage Graph](docs/lineage_graph.png)
 
 ---
 
